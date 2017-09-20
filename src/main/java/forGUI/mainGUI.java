@@ -11,9 +11,7 @@ import java.awt.event.*;
 import java.io.File;
 import javax.swing.SwingUtilities;
 
-/**
- * Created by Runilog on 13.09.2017.
- */
+
 public class mainGUI extends Container implements Runnable {
     private JTextArea textArea1;
     private JTextField pathTextField;
@@ -23,20 +21,27 @@ public class mainGUI extends Container implements Runnable {
     private JPanel panelMain;
     private JScrollPane scrollPane;
     private JTextField searchTextField;
-    private String item = ".log";
+    private JTree tree;
+
+
     private DefaultMutableTreeNode root;
     private DefaultTreeModel treeModel;
-    private JTree tree;
+
+    private String item;
     private String searchRequest;
-    private String treePath;
     private File searchPath;
     private Boolean isFind = true;
 
+//    private String treePath;
 
 
-    public mainGUI() {
+
+
+    private mainGUI() {
+        item = ".log";
         tree = new JTree();
         root = new DefaultMutableTreeNode();
+        //EXPLORER'S BUTTON
         explorerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
@@ -51,33 +56,32 @@ public class mainGUI extends Container implements Runnable {
                   }
             }
         });
+        //SEARCH BUTTON
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(searchRequest==null||searchRequest.equals("")) JOptionPane.showMessageDialog(null,"Введите поисковый запрос");
-                if (searchPath!=null&&searchPath.exists()) {
-                    root.removeAllChildren();
+                if(searchRequest==null||searchRequest.equals(""))
+                    JOptionPane.showMessageDialog(null, "Введите поисковый запрос");
+                else{
+                        if (searchPath != null && searchPath.exists()) {
+                            root.removeAllChildren();
+                            treeModel = new DefaultTreeModel(root);
+                            tree.setModel(treeModel);
+                            scrollPane.setViewportView(tree);
 
-                    DefaultMutableTreeNode child = new DefaultMutableTreeNode(searchPath);
-                    treeModel = new DefaultTreeModel(root);
-                    tree.setModel(treeModel);
-                    scrollPane.setViewportView(tree);
+                            CreateChildNodes ccn = new CreateChildNodes(searchPath, root, item, tree, isFind);
+                            ccn.run();
 
-                    CreateChildNodes ccn = new CreateChildNodes(searchPath, root, item/*, tree*/);
-                    SwingUtilities.invokeLater(ccn);
-//                    ccn.run();
-                    for (int i =
-                         0; i < tree.getRowCount(); i++)
-                        tree.expandRow(i);
+                            for (int i = 0; i < tree.getRowCount(); i++)
+                                tree.expandRow(i);
 
-                    if(!isFind)
-                    tree.setCellRenderer(new MyRenderer(UIManager.getIcon("FileView.directoryIcon")));
-                    else  tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
+                            if (!isFind)
+                                tree.setCellRenderer(new MyRenderer(UIManager.getIcon("FileView.directoryIcon")));
+                            else tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
+                        } else JOptionPane.showMessageDialog(null, "Указанная директория не существует");
+                    }
                 }
-                else JOptionPane.showMessageDialog(null,"Указанная директория не существует");
-            }
         });
-
-
+        //CHOSE EXTEND OF FILE
         comboBox1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             item = comboBox1.getSelectedItem().toString();
@@ -91,7 +95,7 @@ public class mainGUI extends Container implements Runnable {
                 //tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             }
         });
-
+        //
         pathTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 searchPath = new File(pathTextField.getText());
@@ -127,7 +131,7 @@ public class mainGUI extends Container implements Runnable {
         JFrame frame = new JFrame("LogFinder");
         frame.setContentPane(new mainGUI().panelMain);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.pack();
+        frame.pack();
         frame.setLocationByPlatform(true);
         frame.setSize(1280, 960);
         frame.setVisible(true);

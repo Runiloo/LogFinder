@@ -5,15 +5,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 import java.io.File;
 
-/**
- * Created by Runilog on 19.09.2017.
- */
+
 public class MyRenderer extends DefaultTreeCellRenderer {
 
-    Icon icon;
-    private boolean leaf;
+    private Icon icon;
 
-    public MyRenderer(Icon icon){
+    protected MyRenderer(Icon icon){
     this.icon = icon;
     }
 
@@ -25,7 +22,6 @@ public class MyRenderer extends DefaultTreeCellRenderer {
         if(leaf){
             setIcon(icon);
         }
-
         return this;
     }
 
