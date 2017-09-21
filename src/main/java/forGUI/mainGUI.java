@@ -5,10 +5,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.Document;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
 
 
@@ -49,7 +53,7 @@ public class mainGUI extends Container implements Runnable {
                 dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 dialog.setFileFilter(new MyFileFilter(item, ""));
 
-                int ret = dialog.showDialog(null, "Выбрать");
+                int ret = dialog.showDialog(null, "OK");
                   if(ret == JFileChooser.APPROVE_OPTION) {
                       pathTextField.setText(dialog.getSelectedFile().getAbsolutePath());
                       searchPath =  dialog.getSelectedFile();
@@ -68,15 +72,15 @@ public class mainGUI extends Container implements Runnable {
                             tree.setModel(treeModel);
                             scrollPane.setViewportView(tree);
 
-                            CreateChildNodes ccn = new CreateChildNodes(searchPath, root, item, tree, isFind);
+                            CreateChildNodes ccn = new CreateChildNodes(searchPath, root, item, tree, isFind, searchRequest);
                             ccn.run();
 
                             for (int i = 0; i < tree.getRowCount(); i++)
                                 tree.expandRow(i);
 
-                            if (!isFind)
-                                tree.setCellRenderer(new MyRenderer(UIManager.getIcon("FileView.directoryIcon")));
-                            else tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
+
+
+                            tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
                         } else JOptionPane.showMessageDialog(null, "Указанная директория не существует");
                     }
                 }
@@ -87,12 +91,29 @@ public class mainGUI extends Container implements Runnable {
             item = comboBox1.getSelectedItem().toString();
             }
         });
-        //tree
+        //TREE
         tree.addComponentListener(new ComponentAdapter() {
         });
         tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                //tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+                FileReader file_reader = null;
+                try {
+                    file_reader = new FileReader(tree.getSelectionPath().getLastPathComponent().toString());
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
+                }
+
+                char buffer[] = new char[4096];
+                int len;
+                try {
+                    while ((len = file_reader.read(buffer)) != -1){
+                        String s = new String (buffer, 0, len);
+                        textArea1.append(s);
+                    }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                textArea1.setCaretPosition(0);
             }
         });
         //
@@ -129,6 +150,7 @@ public class mainGUI extends Container implements Runnable {
 
     public void run() {
         JFrame frame = new JFrame("LogFinder");
+
         frame.setContentPane(new mainGUI().panelMain);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

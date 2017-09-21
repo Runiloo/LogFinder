@@ -13,13 +13,15 @@ public class CreateChildNodes implements Runnable {
     private String item;
     private JTree tree;
     Boolean isFind;
+    String searchRequest;
 
-    protected CreateChildNodes(File fileRoot, DefaultMutableTreeNode root, String item,JTree tree, Boolean isFind) {
+    protected CreateChildNodes(File fileRoot, DefaultMutableTreeNode root, String item,JTree tree, Boolean isFind, String searchRequest) {
         this.fileRoot = fileRoot;
         this.root = root;
         this.item = item;
         this.tree = tree;
         this.isFind = isFind;
+        this.searchRequest = searchRequest;
     }
 
     public void run() {
@@ -50,26 +52,23 @@ public class CreateChildNodes implements Runnable {
     private void pushFiles(File fileRoot, DefaultMutableTreeNode node) {
         File[] files = fileRoot.listFiles();
         if (files == null) return;
-        FileScan fs = new FileScan(files, this, node, isFind);
+        FileScan fs = new FileScan(files, this, node);
         fs.start();
-
     }
 
     protected void Scan(File file, DefaultMutableTreeNode node) {
         if (file.toString().endsWith(item)) {
-//            if (isFind)
-                node.add(new DefaultMutableTreeNode(new FileNode(file)));
-
-                /*SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        tree.updateUI();
-                    }
-                });*/
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(new File(file.getPath()));
+                child.setAllowsChildren(false);
+                node.add(child);
         }
         if (file.isDirectory()) {
-            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new FileNode(file));
+            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new File(file.getPath()));
             node.add(childNode);
             pushFiles(file, childNode);
         }
+    }
+    public String getSearchRequest(){
+        return searchRequest;
     }
 }

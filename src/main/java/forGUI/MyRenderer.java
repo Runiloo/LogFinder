@@ -1,6 +1,7 @@
 package forGUI;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 import java.io.File;
@@ -19,9 +20,12 @@ public class MyRenderer extends DefaultTreeCellRenderer {
                 tree, value, sel,
                 expanded, leaf, row,
                 hasFocus);
-        if(leaf){
+        DefaultMutableTreeNode val = (DefaultMutableTreeNode)value;
+        if(leaf&&!val.getAllowsChildren()){
             setIcon(icon);
         }
+        else if(leaf&&val.getAllowsChildren())
+            setIcon(UIManager.getIcon("FileView.directoryIcon"));
         return this;
     }
 
