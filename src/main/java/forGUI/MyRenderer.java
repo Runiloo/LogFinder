@@ -4,14 +4,13 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
-import java.io.File;
 
 
-public class MyRenderer extends DefaultTreeCellRenderer {
+class MyRenderer extends DefaultTreeCellRenderer {
 
-    private Icon icon;
+    private final Icon icon;
 
-    protected MyRenderer(Icon icon){
+    MyRenderer(Icon icon){
     this.icon = icon;
     }
 

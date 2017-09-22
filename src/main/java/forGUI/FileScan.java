@@ -2,22 +2,20 @@ package forGUI;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  * Created by Runilog on 21.09.2017.
  */
-public class FileScan extends Thread {
-    private File[] files;
-//    private String findIt;
-    private Boolean isFind;
-    private CreateChildNodes ccn;
-    private DefaultMutableTreeNode node;
-    private String searchRequest;
+class FileScan extends Thread {
+    private final File[] files;
+    private final CreateChildNodes ccn;
+    private final DefaultMutableTreeNode node;
+    private final String searchRequest;
 
     public FileScan(File[] files, CreateChildNodes ccn, DefaultMutableTreeNode node) {
         this.files = files;
-        //findIt = searchRequest;
-//        this.isFind = isFind;
         this.ccn = ccn;
         this.node = node;
         searchRequest = ccn.getSearchRequest();
@@ -38,24 +36,38 @@ public class FileScan extends Thread {
         }
     }
 
-    public boolean parseFile(File file, String searchRequest) throws IOException {
-        RandomAccessFile ra = new RandomAccessFile(file, "r");
-        int i;
-
-        while(ra.getFilePointer()<ra.length()){
-           i = 0;
-            for(; i < searchRequest.length(); i++){
-                byte[] bu = {ra.readByte()};
-                String a = new String(bu);
-                if(!a.equals(searchRequest.substring(i,i+1))) {
-                    break;
+    private boolean parseFile(File file, String searchRequest) throws IOException {
+        byte[] searchRequestBytes = searchRequest.getBytes();
+        FileInputStream f = new FileInputStream( file );
+        FileChannel ch = f.getChannel( );
+        ByteBuffer byteBuffer = ByteBuffer.allocate( 1024 );
+        byte[] byteArray = new byte[128];
+        int nRead, nGet, j=0;
+        while ( (nRead=ch.read( byteBuffer )) != -1 )
+        {
+            if ( nRead == 0 )
+                continue;
+            byteBuffer.position( 0 );
+            byteBuffer.limit( nRead );
+            while( byteBuffer.hasRemaining( ) )
+            {
+                nGet = Math.min( byteBuffer.remaining( ), 128 );
+                byteBuffer.get( byteArray, 0, nGet );
+                for ( int i=0; i<nGet; i++ ){
+                    for(; j < searchRequest.length(); j++){
+                        byte bu = byteArray[i];
+                        if(!(bu==searchRequestBytes[j])) {
+                            j=0;
+                            break;
+                        }
+                        i++;
+                        if(j == searchRequestBytes.length-1)
+                            return true;
+                    }
                 }
-                if (i == searchRequest.length()-1)
-                return true;
             }
-
+            byteBuffer.clear( );
         }
-        if (ra != null)  ra.close();
         return false;
     }
 }

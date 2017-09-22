@@ -5,18 +5,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.text.Document;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import javax.swing.SwingUtilities;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 
-public class mainGUI extends Container implements Runnable {
+class mainGUI extends Container implements Runnable {
     private JTextArea textArea1;
     private JTextField pathTextField;
     private JButton explorerButton;
@@ -25,21 +22,14 @@ public class mainGUI extends Container implements Runnable {
     private JPanel panelMain;
     private JScrollPane scrollPane;
     private JTextField searchTextField;
-    private JTree tree;
+    private final JTree tree;
 
 
-    private DefaultMutableTreeNode root;
-    private DefaultTreeModel treeModel;
+    private final DefaultMutableTreeNode root;
 
     private String item;
     private String searchRequest;
     private File searchPath;
-    private Boolean isFind = true;
-
-//    private String treePath;
-
-
-
 
     private mainGUI() {
         item = ".log";
@@ -48,41 +38,14 @@ public class mainGUI extends Container implements Runnable {
         //EXPLORER'S BUTTON
         explorerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-
-                JFileChooser dialog = new JFileChooser();
-                dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                dialog.setFileFilter(new MyFileFilter(item, ""));
-
-                int ret = dialog.showDialog(null, "OK");
-                  if(ret == JFileChooser.APPROVE_OPTION) {
-                      pathTextField.setText(dialog.getSelectedFile().getAbsolutePath());
-                      searchPath =  dialog.getSelectedFile();
-                  }
+                explorerRun();
             }
         });
+
         //SEARCH BUTTON
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(searchRequest==null||searchRequest.equals(""))
-                    JOptionPane.showMessageDialog(null, "Р’РІРµРґРёС‚Рµ РїРѕРёСЃРєРѕРІС‹Р№ Р·Р°РїСЂРѕСЃ");
-                else{
-                        if (searchPath != null && searchPath.exists()) {
-                            root.removeAllChildren();
-                            treeModel = new DefaultTreeModel(root);
-                            tree.setModel(treeModel);
-                            scrollPane.setViewportView(tree);
-
-                            CreateChildNodes ccn = new CreateChildNodes(searchPath, root, item, tree, isFind, searchRequest);
-                            ccn.run();
-
-                            for (int i = 0; i < tree.getRowCount(); i++)
-                                tree.expandRow(i);
-
-
-
-                            tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
-                        } else JOptionPane.showMessageDialog(null, "РЈРєР°Р·Р°РЅРЅР°СЏ РґРёСЂРµРєС‚РѕСЂРёСЏ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚");
-                    }
+                searchRun();
                 }
         });
         //CHOSE EXTEND OF FILE
@@ -96,26 +59,40 @@ public class mainGUI extends Container implements Runnable {
         });
         tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                FileReader file_reader = null;
                 try {
-                    file_reader = new FileReader(tree.getSelectionPath().getLastPathComponent().toString());
-                } catch (FileNotFoundException e1) {
-                    e1.printStackTrace();
-                }
-
-                char buffer[] = new char[4096];
-                int len;
-                try {
-                    while ((len = file_reader.read(buffer)) != -1){
-                        String s = new String (buffer, 0, len);
-                        textArea1.append(s);
-                    }
+                    openFile(tree, textArea1);
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-                textArea1.setCaretPosition(0);
             }
         });
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(SwingUtilities.isRightMouseButton(e)){
+                    int selRow = tree.getRowForLocation(e.getX(), e.getY());
+                    TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+                    tree.setSelectionPath(selPath);
+                    if (selRow>-1){
+                        tree.setSelectionRow(selRow);
+                    }
+                    JTextArea textArea2 = new JTextArea();
+                    try {
+                        openFile(tree, textArea2);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    JScrollPane jScrollPaneWindow = new JScrollPane(textArea2);
+                    JFrame windowFrame = new JFrame("LogFinder");
+                    windowFrame.setContentPane(jScrollPaneWindow);
+                    windowFrame.pack();
+                    windowFrame.setLocationByPlatform(true);
+                    windowFrame.setSize(1280, 960);
+                    windowFrame.setVisible(true);
+                }
+            }
+        });
+
         //
         pathTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -150,16 +127,15 @@ public class mainGUI extends Container implements Runnable {
 
     public void run() {
         JFrame frame = new JFrame("LogFinder");
-
         frame.setContentPane(new mainGUI().panelMain);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setSize(1280, 960);
         frame.setVisible(true);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)throws InterruptedException  {
         SwingUtilities.invokeLater(new mainGUI());
 
         try {
@@ -175,4 +151,85 @@ public class mainGUI extends Container implements Runnable {
         }
     }
 
+    private void explorerRun(){
+        JFileChooser dialog = new JFileChooser();
+        dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        dialog.setFileFilter(new MyFileFilter(item));
+
+        int ret = dialog.showDialog(null, "OK");
+        if(ret == JFileChooser.APPROVE_OPTION) {
+            pathTextField.setText(dialog.getSelectedFile().getAbsolutePath());
+            searchPath =  dialog.getSelectedFile();
+        }
+    }
+
+    private void searchRun(){
+        if(searchRequest==null||searchRequest.equals(""))
+            JOptionPane.showMessageDialog(null, "Введите поисковый запрос");
+        else if (searchPath != null && searchPath.exists()) {
+            textArea1.setText(null);
+            root.removeAllChildren();
+            DefaultTreeModel treeModel = new DefaultTreeModel(root);
+            tree.setModel(treeModel);
+            scrollPane.setViewportView(tree);
+
+            CreateChildNodes ccn = new CreateChildNodes(searchPath, root, item, treeModel,tree, searchRequest);
+            ccn.run();
+            tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
+        }
+        else JOptionPane.showMessageDialog(null, "Указанная директория не существует");
+    }
+
+    private void openFile(JTree tree, JTextArea textArea) throws IOException {
+        FileReader file_reader = null;
+        File fReader = null;
+        textArea.setEditable(false);
+        if (tree.getSelectionPath()!=null) {
+            fReader = new File(tree.getSelectionPath().getLastPathComponent().toString());
+        }
+        if(fReader!=null&&fReader.isFile()) {
+            FileInputStream f = new FileInputStream( fReader );
+            FileChannel ch = f.getChannel( );
+            ByteBuffer byteBuffer = ByteBuffer.allocate( 1024 );
+            byte[] byteArray = new byte[128];
+            int nRead, nGet, j=0;
+            textArea.setText(null);
+            while ( (nRead=ch.read( byteBuffer )) != -1 )
+            {
+                if ( nRead == 0 )
+                    continue;
+                byteBuffer.position( 0 );
+                byteBuffer.limit( nRead );
+                while( byteBuffer.hasRemaining( ) )
+                {
+                    nGet = Math.min( byteBuffer.remaining( ), 128 );
+                    byteBuffer.get( byteArray, 0, nGet );
+                    textArea.append(new String(byteArray, "windows-1251"));
+                }
+                byteBuffer.clear( );
+            }
+            /*try {
+                file_reader = new FileReader(fReader);
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+            }
+            textArea.setText(null);
+            char buffer[] = new char[4096];
+            int len;
+            try {
+                while ((len = file_reader.read(buffer)) != -1) {
+                    String s = new String(buffer, 0, len);
+                    textArea.append(s);
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            try {
+                file_reader.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            textArea.setCaretPosition(0);*/
+        }
+    }
 }

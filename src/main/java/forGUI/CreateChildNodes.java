@@ -2,26 +2,26 @@ package forGUI;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Stack;
 
 
-public class CreateChildNodes implements Runnable {
-    private DefaultMutableTreeNode root;
-    private File fileRoot;
-    private String item;
-    private JTree tree;
-    Boolean isFind;
-    String searchRequest;
+class CreateChildNodes extends Thread implements Runnable {
+    private final DefaultMutableTreeNode root;
+    private final File fileRoot;
+    private final String item;
+    private final DefaultTreeModel treeModel;
+    private final JTree tree;
+    private final String searchRequest;
 
-    protected CreateChildNodes(File fileRoot, DefaultMutableTreeNode root, String item,JTree tree, Boolean isFind, String searchRequest) {
+    CreateChildNodes(File fileRoot, DefaultMutableTreeNode root, String item, DefaultTreeModel treeModel, JTree tree, String searchRequest) {
         this.fileRoot = fileRoot;
         this.root = root;
         this.item = item;
-        this.tree = tree;
-        this.isFind = isFind;
+        this.treeModel = treeModel;
         this.searchRequest = searchRequest;
+        this.tree = tree;
     }
 
     public void run() {
@@ -46,7 +46,6 @@ public class CreateChildNodes implements Runnable {
             node = nodeBuff;
         }
         pushFiles(fileRoot, node);
-
     }
 
     private void pushFiles(File fileRoot, DefaultMutableTreeNode node) {
@@ -56,19 +55,30 @@ public class CreateChildNodes implements Runnable {
         fs.start();
     }
 
-    protected void Scan(File file, DefaultMutableTreeNode node) {
+    void Scan(File file, DefaultMutableTreeNode node) {
         if (file.toString().endsWith(item)) {
-                DefaultMutableTreeNode child = new DefaultMutableTreeNode(new File(file.getPath()));
-                child.setAllowsChildren(false);
-                node.add(child);
+            DefaultMutableTreeNode child = new DefaultMutableTreeNode(new File(file.getPath()));
+            child.setAllowsChildren(false);
+            node.add(child);
         }
         if (file.isDirectory()) {
             DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new File(file.getPath()));
             node.add(childNode);
             pushFiles(file, childNode);
         }
+        treeUpdate();
     }
-    public String getSearchRequest(){
+
+    public String getSearchRequest() {
         return searchRequest;
     }
+
+    private synchronized void treeUpdate() {
+        treeModel.reload();
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            if (!tree.isExpanded(i))
+                tree.expandRow(i);
+        }
+    }
+
 }

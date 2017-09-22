@@ -1,36 +1,32 @@
 package forGUI;
 
-import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
-/**
- * Created by Runilog on 14.09.2017.
- */
-public class MyFileFilter extends javax.swing.filechooser.FileFilter {
+class MyFileFilter extends javax.swing.filechooser.FileFilter {
+    private final String ext;
+    private final String description;
 
-    String ext, description;
-
-    public MyFileFilter(String ext, String description) {
+    public MyFileFilter(String ext) {
         this.ext = ext;
-        this.description = description;
+        this.description = "";
     }
-
     @Override
     public String getDescription() {
         return description;
     }
 
-    //В этом методе может быть любая проверка файла
     @Override
     public boolean accept(File f) {
         if (f != null) {
             if (f.isDirectory()) {
                 return true;
             }
-            return f.toString().endsWith(ext);
+            try {
+                return f.toString().endsWith(ext);
+            }
+            catch (NullPointerException ignored){
+            }
         }
         return false;
     }
-
-
 }
