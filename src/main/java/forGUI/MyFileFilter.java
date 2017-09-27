@@ -2,14 +2,18 @@ package forGUI;
 
 import java.io.File;
 
+/** Класс для задания фильтра файлов по расширению*/
 class MyFileFilter extends javax.swing.filechooser.FileFilter {
     private final String ext;
     private final String description;
 
+    /**
+     * @param ext */
     public MyFileFilter(String ext) {
         this.ext = ext;
         this.description = "";
     }
+
     @Override
     public String getDescription() {
         return description;

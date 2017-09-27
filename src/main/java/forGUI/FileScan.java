@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Created by Runilog on 21.09.2017.
+ * Класс для сканирования файлов и поиска совпадений с поисковым запросом
  */
 class FileScan extends Thread {
     private final File[] files;
@@ -14,13 +14,17 @@ class FileScan extends Thread {
     private final DefaultMutableTreeNode node;
     private final String searchRequest;
 
+    /**
+     * @param files
+     * @param ccn
+     * @param node */
     public FileScan(File[] files, CreateChildNodes ccn, DefaultMutableTreeNode node) {
         this.files = files;
         this.ccn = ccn;
         this.node = node;
         searchRequest = ccn.getSearchRequest();
     }
-
+    /** Метод запускающий  поиск в отдельном потоке*/
     public void run() {
         for (File file : files) {
             if(file.isDirectory()) ccn.Scan(file, node);
@@ -35,7 +39,9 @@ class FileScan extends Thread {
             }
         }
     }
-
+    /** Метод сканирующий файл
+     * @param file
+     * @param searchRequest */
     private boolean parseFile(File file, String searchRequest) throws IOException {
         byte[] searchRequestBytes = searchRequest.getBytes();
         FileInputStream f = new FileInputStream( file );
@@ -56,7 +62,7 @@ class FileScan extends Thread {
                 for ( int i=0; i<nGet; i++ ){
                     for(; j < searchRequest.length(); j++){
                         byte bu = byteArray[i];
-                        if(!(bu==searchRequestBytes[j])) {
+                        if(bu!=searchRequestBytes[j]) {
                             j=0;
                             break;
                         }
@@ -68,6 +74,8 @@ class FileScan extends Thread {
             }
             byteBuffer.clear( );
         }
+        ch.close();
+        f.close();
         return false;
     }
 }

@@ -5,11 +5,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 
-
+/** Класс для изменения элементов дерева в зависимости файл это или директория*/
 class MyRenderer extends DefaultTreeCellRenderer {
 
     private final Icon icon;
 
+    /**
+     * @param icon*/
     MyRenderer(Icon icon){
     this.icon = icon;
     }
