@@ -13,11 +13,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Основной класс приложения, для поиска текстовых файлов с заданным текстом.
+ * Main class of programm
  */
 
 class LogFinder extends Container implements Runnable {
-    /** Поля с обявлением основных элементов интерфейса */
+    /** Fields with UI elements  */
     private JTextField pathTextField;
     private JButton explorerButton;
     private JComboBox extensionChooser;
@@ -31,44 +31,41 @@ class LogFinder extends Container implements Runnable {
     private final JTree tree;
     private final DefaultMutableTreeNode root;
 
-    /** переменная для хранения расширения файла */
+    /** Keep extension of file */
     private String fileExtension;
-    /** переменная для хранения поискового запроса*/
+    /** Keep search request*/
     private String searchRequest;
-    /** переменная для хранения адреса директории где будет проводиться поиск*/
+    /** Keep folder path for scan*/
     private File searchPath;
-
-    /** Конструктор класса*/
+    
     private LogFinder() {
         fileExtension = ".log";
         tree = new JTree();
         root = new DefaultMutableTreeNode();
 
-        /** присвоение кнопке для вызова диспетчера файлов, компонента для реакции на нажатие*/
+        /** Add listener to explorer button*/
         explorerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 explorerRun();
             }
         });
-        /** присвоение кнопке для запуска поиска, компонента для реакции на нажатие*/
+        /** Add listener to search run button*/
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 searchRun();
             }
         });
-        /** присвоение выпадающему списку для выбора расширения искомого файла компонента
-         * для получения выбранного расширения*/
+        /** Add listener to drop list(choosing file extension)*/
         extensionChooser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 fileExtension = extensionChooser.getSelectedItem().toString();
             }
         });
-        /** присвоение дереву файловой системы с найденными файлами компонента для
-         * рекции на нажатие кнопок мыши*/
+        /** Add listener to tree*/
         tree.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                // правая кнопка мыши
+                // Right mouse button
                 if (SwingUtilities.isRightMouseButton(e)) {
                     int selRow = tree.getRowForLocation(e.getX(), e.getY());
                     TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
@@ -96,7 +93,7 @@ class LogFinder extends Container implements Runnable {
                     }
 
                 }
-                //левая кнопка мыши
+                //Left mouse button
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     int selRow = tree.getRowForLocation(e.getX(), e.getY());
                     TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
@@ -118,7 +115,7 @@ class LogFinder extends Container implements Runnable {
             }
         });
 
-        /** присвоение полю ввода пути поиска компонента для считывания вводимого текста с клавиатуры*/
+        /** Add listener to field to react on putting text */
         pathTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 searchPath = new File(pathTextField.getText());
@@ -130,7 +127,7 @@ class LogFinder extends Container implements Runnable {
                 searchPath = new File(pathTextField.getText());
             }
         });
-        /** присвоение полю ввода поискового запроса компонента для считывания вводимого текста с клавиатуры*/
+        /** Add listener to field to read putted text*/
         searchTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 searchRequest = searchTextField.getText();
@@ -143,7 +140,7 @@ class LogFinder extends Container implements Runnable {
             }
         });
     }
-    /** Метод для запуска потока в котором будет выполнятся приложение*/
+    /** Run main thread for program*/
     public void run() {
         JFrame frame = new JFrame("LogFinder");
         frame.setContentPane(new LogFinder().panelMain);
@@ -168,7 +165,7 @@ class LogFinder extends Container implements Runnable {
             e.printStackTrace();
         }
     }
-    /** Метод для запуска диспетчера файлов*/
+    /** Run explorer*/
     private void explorerRun() {
         JFileChooser dialog = new JFileChooser();
         dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -181,10 +178,10 @@ class LogFinder extends Container implements Runnable {
         }
     }
 
-    /** Метод, выполняющий поиск по файловой системе файлов с текстом поискового запроса*/
+    /** Run search*/
     private void searchRun() {
         if (searchRequest == null || searchRequest.equals(""))
-            JOptionPane.showMessageDialog(null, "Введите поисковый запрос");
+            JOptionPane.showMessageDialog(null, "Р’РІРµРґРёС‚Рµ РїРѕРёСЃРєРѕРІС‹Р№ Р·Р°РїСЂРѕСЃ");
         else if (searchPath != null && searchPath.exists()) {
             tree.setCellRenderer(new MyRenderer(UIManager.getIcon("OptionPane.informationIcon")));
             root.removeAllChildren();
@@ -193,9 +190,9 @@ class LogFinder extends Container implements Runnable {
             scrollPane.setViewportView(tree);
             CreateChildNodes ccn = new CreateChildNodes(searchPath, root, fileExtension, treeModel, tree, searchRequest);
             ccn.runCreating();
-        } else JOptionPane.showMessageDialog(null, "Указанная директория не существует");
+        } else JOptionPane.showMessageDialog(null, "РЈРєР°Р·Р°РЅРЅР°СЏ РґРёСЂРµРєС‚РѕСЂРёСЏ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚");
     }
-    /** Метод, очуществляющий открытие содержимого файла в основном окне либо в отдельном окне
+    /** Open file in program window or new window
      * @param tree
      * @param textArea
      * @param scrollBar
@@ -242,10 +239,10 @@ class LogFinder extends Container implements Runnable {
             scrollBar.addAdjustmentListener(new MyAdjustmentListener(file,scrollBar,textArea));
         }
     }
-    /** Метод для определения наличия в файле поискового запроса
+    /** Parse file to find out search request text
      * @param file
      * @param searchRequest
-     * @return объект класса IntAndByteBuffer*/
+     * @return instance of IntAndByteBuffer class with results*/
     private IntAndByteBuffer parseFile(File file, String searchRequest) throws IOException {
         int partsCount[] ={0,0};
         ByteBuffer result = ByteBuffer.allocate( 102400 );
