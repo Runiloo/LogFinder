@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Класс для сканирования файлов и поиска совпадений с поисковым запросом
+ * Scan files and search matches with search request
  */
 class FileScan extends Thread {
     private final File[] files;
@@ -24,7 +24,7 @@ class FileScan extends Thread {
         this.node = node;
         searchRequest = ccn.getSearchRequest();
     }
-    /** Метод запускающий  поиск в отдельном потоке*/
+    /** Run scan in new thread*/
     public void run() {
         for (File file : files) {
             if(file.isDirectory()) ccn.Scan(file, node);
@@ -39,7 +39,7 @@ class FileScan extends Thread {
             }
         }
     }
-    /** Метод сканирующий файл
+    /** Scan file to find request text
      * @param file
      * @param searchRequest */
     private boolean parseFile(File file, String searchRequest) throws IOException {
