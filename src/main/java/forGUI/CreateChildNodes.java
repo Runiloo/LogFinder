@@ -6,7 +6,7 @@ import javax.swing.tree.DefaultTreeModel;
 import java.io.File;
 import java.util.Stack;
 
-/**  ласс дл€ создани€ узлов дерева хран€щих директории и файлы содержащии поисковый запрос*/
+/** Create tree nodes with path to files that coincide with request*/
 class CreateChildNodes extends Thread  {
     private final DefaultMutableTreeNode root;
     private final File file;
@@ -32,12 +32,12 @@ class CreateChildNodes extends Thread  {
         this.tree = tree;
     }
 
-    /** ћетод, запускающий создание узлов*/
+    /** Run nodes creating*/
     public void runCreating() {
         createChildren(file, root);
     }
 
-    /** ћетод, создающий узлы дерева
+    /** Create tree nodes
      * @param fileRoot
      * @param node */
     private void createChildren(File fileRoot, DefaultMutableTreeNode node) {
@@ -57,7 +57,7 @@ class CreateChildNodes extends Thread  {
         }
         pushFiles(fileRoot, node);
     }
-    /** ћетод добавл€ющий файлы только файлы с встречающимс€ поисковым запросом
+    /** Add only files with request text
      * @param fileRoot
      * @param node */
     private void pushFiles(File fileRoot, DefaultMutableTreeNode node) {
@@ -67,8 +67,7 @@ class CreateChildNodes extends Thread  {
         fs.start();
     }
 
-    /** ћетод сканирующий путь и распредел€ющий в зависимости от того директори€ или файл
-     * на запись в узлы
+    /** Scan path and distribute the files and folders
      * @param file
      * @param node */
     void Scan(File file, DefaultMutableTreeNode node) {
@@ -88,8 +87,7 @@ class CreateChildNodes extends Thread  {
     public String getSearchRequest() {
         return searchRequest;
     }
-    /** ћетод безопасно обновл€ющий отображение дерева в интерфейсе, так как сканирование происходит
-     * в несколько потоков*/
+    /** Refresh tree safely in UI, because of multithreaded scan*/
     private synchronized void treeUpdate() {
         treeModel.reload();
         for (int i = 0; i < tree.getRowCount(); i++) {
