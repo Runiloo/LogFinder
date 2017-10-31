@@ -2,7 +2,7 @@ package forGUI;
 
 import java.io.File;
 
-/** Класс для задания фильтра файлов по расширению*/
+/** Create filter for file extstension */
 class MyFileFilter extends javax.swing.filechooser.FileFilter {
     private final String ext;
     private final String description;
