@@ -3,7 +3,7 @@ package forGUI;
 import java.nio.ByteBuffer;
 
 /**
- * Класс контейнер для вывода из метода двух переменных разных типов
+ * Container for two values different types
  */
 class IntAndByteBuffer {
     private final int[] index;
