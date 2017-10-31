@@ -1,6 +1,2 @@
-Данное приложение позволяет производить поиск файлов(.txt и .log) содержащие соответсвия поисковой комбинации, 
-слева отображается дерево файловой структуры только с теми файлами в которых было найдено соответствие.
-Можно просматривать файлы в окне программы, либо отркрывать дополнительные окна с нужным файлом. 
-Так же программа позволяет открывать файлы большого размера > Гб. Навигация по файлам производится двумя 
-скроллбарами, левый предназначен для быстрой навигации и пролистывания к следующему фрагменту.
-Файлы открываются на фрагменте с первым соответствием искомой комбинации, которая выделена красным цветом.
+This program allow look for files (.txt and .log) that have request text. On the left side of window is a tree of file sistem
+with files that fit the request. It have opportunity to consider file in the right side of window or open it in new window by right click of mouse. Also program let open big files, wich size more than 1Gb. There are two sliders in window(and tab) which let to positioning the view of file, left slider for coarse positioning, right slider for fine positioning(also mouse wheel rule it). File open on that part of text, which have search request and it highlighted red.
