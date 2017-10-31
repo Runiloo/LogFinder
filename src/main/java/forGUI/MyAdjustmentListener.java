@@ -11,8 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Класс реализующий интерфейс компонента для реагирования на перемещение слайдера в полосе прокрутки
- * и подгрузки текста из файла в соответствии с положением слайдера
+ *Implement AdjustmentListener interface  to react on coarse slider moving
  */
 class MyAdjustmentListener implements AdjustmentListener {
     private JTextArea textArea;
@@ -52,7 +51,7 @@ class MyAdjustmentListener implements AdjustmentListener {
 
     }
 
-    /** Метод производящий поиск в файле указанного фрагмента по индексу
+    /** Find out and get part of text by index
      * @param file
      * @param index
      * @return ByteBuffer*/
